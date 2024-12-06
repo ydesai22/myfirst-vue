@@ -17,7 +17,7 @@
   <template>
     <div class="home-page">
       <h1>Welcome to the Home Page</h1>
-      <p>This is the starting point of our application. Click the button below to explore more!</p>
+      <p>This is the starting point of our application. Click the button below to explore</p>
       <button class="btn" @click="goToSecondPage">Go to Second Page</button>
     </div>
   </template>
