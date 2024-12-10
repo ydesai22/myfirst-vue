@@ -5,7 +5,6 @@
     <button :disabled="!isStartEnabled" @click="openModal('start')">Start Work</button>
     <button :disabled="!isFinishEnabled" @click="openModal('finish')">Finish Work</button>
 
-    
     <div v-if="showModal" class="overlay">
       <div class="modal">
         <p>{{ modalMessage }}</p>
@@ -13,8 +12,6 @@
         <button @click="closeModal">No</button>
       </div>
     </div>
-
-    
   </div>
 </template>
 
@@ -22,14 +19,15 @@
 export default {
   data() {
     return {
-      isStartEnabled: true,
-      isFinishEnabled: false,
-      showModal: false,
-      modalMessage: "",
-      currentAction: "",
+      isStartEnabled: true, 
+      isFinishEnabled: false,  
+      showModal: false,  
+      modalMessage: "",  
+      currentAction: "",  
     };
   },
   methods: {
+    
     openModal(action) {
       this.currentAction = action;
       this.modalMessage =
@@ -37,30 +35,63 @@ export default {
           ? "Are you sure you want to start work?"
           : "Are you sure you want to finish work?";
       this.showModal = true;
+
+      localStorage.setItem("showModal", true);
+      localStorage.setItem("modalMessage", this.modalMessage);
+      localStorage.setItem("currentAction", this.currentAction);
     },
+
     confirmAction() {
       if (this.currentAction === "start") {
-        this.isStartEnabled = false;
-        this.isFinishEnabled = true;
+        this.isStartEnabled = false;  
+        this.isFinishEnabled = true;  
       } else if (this.currentAction === "finish") {
-        this.isStartEnabled = true;
-        this.isFinishEnabled = false;
+        this.isStartEnabled = true; 
       }
-      this.closeModal();
+
+      this.closeModal(); 
+      this.saveState();  
     },
+
+    
     closeModal() {
       this.showModal = false;
     },
+
+   
+    restoreState() {
+      this.isStartEnabled = JSON.parse(localStorage.getItem("isStartEnabled")) ?? true;
+      this.isFinishEnabled = JSON.parse(localStorage.getItem("isFinishEnabled")) ?? false;
+
+
+      this.showModal = JSON.parse(localStorage.getItem("showModal")) ?? false;
+      this.modalMessage = localStorage.getItem("modalMessage") || "";
+      this.currentAction = localStorage.getItem("currentAction") || "";
+    },
+
+   
+    saveState() {
+      localStorage.setItem("isStartEnabled", this.isStartEnabled);
+      localStorage.setItem("isFinishEnabled", this.isFinishEnabled);
+      localStorage.setItem("showModal", this.showModal);
+      localStorage.setItem("modalMessage", this.modalMessage);
+      localStorage.setItem("currentAction", this.currentAction);
+    }
   },
+
+
+  mounted() {
+    this.restoreState(); 
+  }
 };
 </script>
 
 <style scoped>
-/* Page Background */
+
 .second-page {
   text-align: center;
   margin-top: 50px;
-  background: linear-gradient(135deg, #62823c, #96cadc);
+  background: linear-gradient(135deg, #62823c, #96cadc); 
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -68,9 +99,10 @@ export default {
   align-items: center;
   color: white;
   font-family: 'Arial', sans-serif;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
 }
 
-/* Buttons */
+
 button {
   margin: 15px;
   padding: 12px 30px;
@@ -79,6 +111,7 @@ button {
   cursor: pointer;
   border: none;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
 button:disabled {
@@ -96,24 +129,23 @@ button:not(:disabled):hover {
   transform: scale(1.05);
 }
 
-/* Modal Overlay */
 .overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.6); /* Dark semi-transparent background */
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
 
-/* Modal Box */
+
 .modal {
-  background: white; /* Bright background for contrast */
-  color: #333; /* Dark text for readability */
+  background: white;
+  color: #333;
   padding: 20px;
   border-radius: 10px;
   text-align: center;
@@ -123,13 +155,13 @@ button:not(:disabled):hover {
   animation: fadeIn 0.5s ease-in-out;
 }
 
-/* Modal Text */
+
 .modal p {
   font-size: 1.2em;
   margin-bottom: 20px;
 }
 
-/* Modal Buttons */
+
 .modal button {
   margin: 10px;
   padding: 10px 20px;
@@ -158,7 +190,7 @@ button:not(:disabled):hover {
   background-color: #e53935;
 }
 
-/* Animations */
+
 @keyframes fadeIn {
   0% {
     opacity: 0;
