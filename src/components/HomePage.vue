@@ -82,13 +82,12 @@
         explore more...
       </p>
       <button class="btn" @click="goToSecondPage">Go to Second Page</button>
-  
-      <!-- Form Section -->
+
       <div class="form-container">
         <h2>Contact Us</h2>
         <p>We'd love to hear from you! Please fill out the form below:</p>
         <form @submit.prevent="handleSubmit">
-          <!-- Name Input -->
+        
           <div class="form-group">
             <label for="name">Name</label>
             <input
@@ -100,7 +99,7 @@
             />
           </div>
   
-          <!-- Email Input -->
+  
           <div class="form-group">
             <label for="email">Email</label>
             <input
@@ -112,8 +111,7 @@
             />
           </div>
   
-          <!-- Phone Input -->
-          <div class="form-group">
+           <div class="form-group">
             <label for="phone">Phone</label>
             <input
               type="tel"
@@ -126,12 +124,11 @@
             />
           </div>
   
-          <!-- Submit Button -->
+       
           <button class="btn" type="submit">Submit</button>
         </form>
       </div>
-  
-      <!-- Success Popup -->
+
       <div v-if="successPopup" class="popup success">
         <p>🎉 Form submitted successfully! Thank you for reaching out!</p>
         <button @click="closePopup">Close</button>

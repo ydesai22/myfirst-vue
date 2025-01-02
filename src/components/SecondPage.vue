@@ -2,8 +2,54 @@
   <div class="second-page">
     <h1>Work Tracker</h1>
     <p>Track your work with Start, Confirm, and Finish buttons!</p>
-    <button :disabled="!isStartEnabled" @click="openModal('start')">Start Work</button>
-    <button :disabled="!isFinishEnabled" @click="openModal('finish')">Finish Work</button>
+
+    <!-- Task Input -->
+    <div class="task-input">
+      <label for="numTasks">No of Tasks (1-25): </label>
+      <input
+        type="number"
+        id="numTasks"
+        v-model.number="numTasks"
+        min="1"
+        max="25"
+        placeholder="Enter number of tasks"
+      />
+      <button :disabled="!isTaskInputValid" @click="generateTasks">Generate Tasks</button>
+    </div>
+
+    <!-- Task Table -->
+    <table v-if="tasks.length > 0" class="task-table">
+      <thead>
+        <tr>
+          <th>Task Name</th>
+          <th>Start</th>
+          <th>Stop</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(task, index) in tasks" :key="index">
+          <td>{{ task.name }}</td>
+          <td>
+            <button
+              :disabled="task.isStarted"
+              @click="startTask(index)"
+              class="btn-start"
+            >
+              Start
+            </button>
+          </td>
+          <td>
+            <button
+              :disabled="!task.isStarted || task.isStopped"
+              @click="stopTask(index)"
+              class="btn-stop"
+            >
+              Stop
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
     <!-- Modal -->
     <div v-if="showModal" class="overlay">
@@ -20,15 +66,39 @@
 export default {
   data() {
     return {
-      isStartEnabled: true, // Start button is enabled initially
-      isFinishEnabled: false, // Finish button is disabled initially
-      showModal: false, // Controls modal visibility
-      modalMessage: "", // Message displayed in the modal
-      currentAction: "", // Tracks the current action (start/finish)
+      numTasks: null, // Number of tasks input
+      tasks: [], // Task details
+      isStartEnabled: true, // Start button state
+      isFinishEnabled: false, // Finish button state
+      showModal: false, // Modal visibility
+      modalMessage: "", // Modal message
+      currentAction: "", // Current action in modal (start/finish)
     };
   },
+  computed: {
+    // Validate task input between 1 and 25
+    isTaskInputValid() {
+      return this.numTasks >= 1 && this.numTasks <= 25;
+    },
+  },
   methods: {
-    // Open the modal with a specific action
+    // Generate tasks based on input
+    generateTasks() {
+      this.tasks = Array.from({ length: this.numTasks }, (_, index) => ({
+        name: `Task ${index + 1}`,
+        isStarted: false,
+        isStopped: false,
+      }));
+    },
+    // Start a specific task
+    startTask(index) {
+      this.tasks[index].isStarted = true;
+    },
+    // Stop a specific task
+    stopTask(index) {
+      this.tasks[index].isStopped = true;
+    },
+    // Open modal with specified action
     openModal(action) {
       this.currentAction = action;
       this.modalMessage =
@@ -37,62 +107,47 @@ export default {
           : "Are you sure you want to finish work?";
       this.showModal = true;
 
-      // Store modal state in localStorage
+      // Save modal state in localStorage
       localStorage.setItem("showModal", true);
       localStorage.setItem("modalMessage", this.modalMessage);
       localStorage.setItem("currentAction", this.currentAction);
     },
-
-    // Confirm the action and update button states
+    // Confirm action and update button states
     confirmAction() {
       if (this.currentAction === "start") {
-        this.isStartEnabled = false; // Disable Start button
-        this.isFinishEnabled = true; // Enable Finish button
+        this.isStartEnabled = false;
+        this.isFinishEnabled = true;
       } else if (this.currentAction === "finish") {
-        this.isStartEnabled = true; // Enable Start button
-        this.isFinishEnabled = false; // Disable Finish button
+        this.isStartEnabled = true;
+        this.isFinishEnabled = false;
       }
-
-      // Reset modal state and clear from localStorage
       this.closeModal();
       localStorage.removeItem("showModal");
       localStorage.removeItem("modalMessage");
       localStorage.removeItem("currentAction");
     },
-
-    // Close the modal without changing states
+    // Close the modal
     closeModal() {
       this.showModal = false;
       this.currentAction = "";
-
-      // Clear modal data from localStorage
       localStorage.removeItem("showModal");
       localStorage.removeItem("modalMessage");
       localStorage.removeItem("currentAction");
     },
-
-    // Restore state from localStorage on page load
+    // Restore state from localStorage
     restoreState() {
-      // Restore modal state
       this.showModal = JSON.parse(localStorage.getItem("showModal")) || false;
       this.modalMessage = localStorage.getItem("modalMessage") || "";
       this.currentAction = localStorage.getItem("currentAction") || "";
-
-      // Restore button states
-      this.isStartEnabled =
-        JSON.parse(localStorage.getItem("isStartEnabled")) ?? true;
-      this.isFinishEnabled =
-        JSON.parse(localStorage.getItem("isFinishEnabled")) ?? false;
     },
   },
   mounted() {
-    this.restoreState(); // Restore state when the component loads
+    this.restoreState();
   },
 };
 </script>
 
 <style scoped>
-/* Page Background */
 .second-page {
   text-align: center;
   margin-top: 50px;
@@ -106,7 +161,17 @@ export default {
   font-family: 'Arial', sans-serif;
 }
 
-/* Buttons */
+/* Task Input Section */
+.task-input {
+  margin-bottom: 20px;
+}
+
+input {
+  padding: 8px;
+  font-size: 1rem;
+  margin-right: 10px;
+}
+
 button {
   margin: 15px;
   padding: 12px 30px;
@@ -132,48 +197,48 @@ button:not(:disabled):hover {
   transform: scale(1.05);
 }
 
-/* Modal Overlay */
+/* Task Table */
+.task-table {
+  margin-top: 20px;
+  border-collapse: collapse;
+  width: 80%;
+}
+
+.task-table th,
+.task-table td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: center;
+}
+
+.task-table th {
+  background-color: #f4f4f4;
+  color: #333;
+}
+
+/* Modal */
 .overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.6); /* Dark semi-transparent background */
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
 
-/* Modal Box */
 .modal {
-  background: white; /* Bright background for contrast */
-  color: #333; /* Dark text for readability */
+  background: white;
+  color: #333;
   padding: 20px;
   border-radius: 10px;
   text-align: center;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   max-width: 400px;
   width: 90%;
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-/* Modal Text */
-.modal p {
-  font-size: 1.2em;
-  margin-bottom: 20px;
-}
-
-/* Modal Buttons */
-.modal button {
-  margin: 10px;
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  border: none;
-  border-radius: 5px;
-  transition: all 0.2s ease;
 }
 
 .modal button:first-of-type {
@@ -181,28 +246,8 @@ button:not(:disabled):hover {
   color: white;
 }
 
-.modal button:first-of-type:hover {
-  background-color: #45a049;
-}
-
 .modal button:last-of-type {
   background-color: #f44336;
   color: white;
-}
-
-.modal button:last-of-type:hover {
-  background-color: #e53935;
-}
-
-/* Animations */
-@keyframes fadeIn {
-  0% {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
 }
 </style>
