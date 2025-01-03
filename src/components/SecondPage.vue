@@ -1,7 +1,7 @@
 <template>
   <div class="second-page">
     <h1>Work Tracker</h1>
-    <p>Track your work with Start, Confirm, and Finish buttons!</p>
+    <p>Track your work with Start and Stop buttons!</p>
 
     <!-- Task Input -->
     <div class="task-input">
@@ -24,6 +24,8 @@
           <th>Task Name</th>
           <th>Start</th>
           <th>Stop</th>
+          <th>Start Count</th>
+          <th>Stop Count</th>
         </tr>
       </thead>
       <tbody>
@@ -47,18 +49,11 @@
               Stop
             </button>
           </td>
+          <td>{{ task.startCount }}</td>
+          <td>{{ task.stopCount }}</td>
         </tr>
       </tbody>
     </table>
-
-    <!-- Modal -->
-    <div v-if="showModal" class="overlay">
-      <div class="modal">
-        <p>{{ modalMessage }}</p>
-        <button @click="confirmAction">Yes</button>
-        <button @click="closeModal">No</button>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -68,11 +63,6 @@ export default {
     return {
       numTasks: null, // Number of tasks input
       tasks: [], // Task details
-      isStartEnabled: true, // Start button state
-      isFinishEnabled: false, // Finish button state
-      showModal: false, // Modal visibility
-      modalMessage: "", // Modal message
-      currentAction: "", // Current action in modal (start/finish)
     };
   },
   computed: {
@@ -88,66 +78,30 @@ export default {
         name: `Task ${index + 1}`,
         isStarted: false,
         isStopped: false,
+        startCount: 0,
+        stopCount: 0,
       }));
     },
     // Start a specific task
     startTask(index) {
-      this.tasks[index].isStarted = true;
+      const task = this.tasks[index];
+      task.isStarted = true;
+      task.isStopped = false;
+      task.startCount += 1;
     },
     // Stop a specific task
     stopTask(index) {
-      this.tasks[index].isStopped = true;
+      const task = this.tasks[index];
+      task.isStarted = false;
+      task.isStopped = true;
+      task.stopCount += 1;
     },
-    // Open modal with specified action
-    openModal(action) {
-      this.currentAction = action;
-      this.modalMessage =
-        action === "start"
-          ? "Are you sure you want to start work?"
-          : "Are you sure you want to finish work?";
-      this.showModal = true;
-
-      // Save modal state in localStorage
-      localStorage.setItem("showModal", true);
-      localStorage.setItem("modalMessage", this.modalMessage);
-      localStorage.setItem("currentAction", this.currentAction);
-    },
-    // Confirm action and update button states
-    confirmAction() {
-      if (this.currentAction === "start") {
-        this.isStartEnabled = false;
-        this.isFinishEnabled = true;
-      } else if (this.currentAction === "finish") {
-        this.isStartEnabled = true;
-        this.isFinishEnabled = false;
-      }
-      this.closeModal();
-      localStorage.removeItem("showModal");
-      localStorage.removeItem("modalMessage");
-      localStorage.removeItem("currentAction");
-    },
-    // Close the modal
-    closeModal() {
-      this.showModal = false;
-      this.currentAction = "";
-      localStorage.removeItem("showModal");
-      localStorage.removeItem("modalMessage");
-      localStorage.removeItem("currentAction");
-    },
-    // Restore state from localStorage
-    restoreState() {
-      this.showModal = JSON.parse(localStorage.getItem("showModal")) || false;
-      this.modalMessage = localStorage.getItem("modalMessage") || "";
-      this.currentAction = localStorage.getItem("currentAction") || "";
-    },
-  },
-  mounted() {
-    this.restoreState();
   },
 };
 </script>
 
 <style scoped>
+/* Page Styles */
 .second-page {
   text-align: center;
   margin-top: 50px;
@@ -212,42 +166,29 @@ button:not(:disabled):hover {
 }
 
 .task-table th {
-  background-color: #f4f4f4;
-  color: #333;
-}
-
-/* Modal */
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal {
-  background: white;
-  color: #333;
-  padding: 20px;
-  border-radius: 10px;
-  text-align: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-  max-width: 400px;
-  width: 90%;
-}
-
-.modal button:first-of-type {
   background-color: #4caf50;
   color: white;
 }
 
-.modal button:last-of-type {
-  background-color: #f44336;
-  color: white;
+.task-table td {
+  background-color: #f4f4f4;
+  color: #333;
+}
+
+.task-table td button {
+  padding: 5px 15px;
+  font-size: 16px;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.task-table td button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.task-table td button:not(:disabled):hover {
+  background-color: #45a049;
+  transform: scale(1.05);
 }
 </style>
